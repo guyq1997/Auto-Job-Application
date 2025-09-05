@@ -29,7 +29,7 @@ async def test_two_step_application():
             "title": "Senior Python Developer",
             "company": "Tech Company",
             "location": "Berlin, Germany",
-            "url": "https://www.guldberg.de/stellenangebote/stellenanzeige/job-entwicklungsingenieur-hardware-m-w-d-kiel-14606",  # 示例URL
+            "url": "https://career.lauterbach.com/jobs/19118501/Field-Application-Engineer-FAE-m-w-d-/",  # 示例URL
             "description": "We are looking for a Senior Python Developer..."
         }
         
@@ -61,8 +61,6 @@ async def test_two_step_application():
         if result.error_message:
             print(f"错误信息: {result.error_message}")
         
-        if result.screenshot_path:
-            print(f"截图路径: {result.screenshot_path}")
         
         print(f"时间戳: {result.timestamp}")
         

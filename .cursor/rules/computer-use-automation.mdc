@@ -1,0 +1,37 @@
+---
+globs: openai_computer_automation.py
+alwaysApply: false
+---
+# OpenAI Computer Use API 集成指南
+
+本项目现在支持两种自动化后端：
+1. **Browser-use** - 原有的稳定方案
+2. **OpenAI Computer Use API** - 新的AI驱动方案 ✨
+
+这个脚本使用open ai api 进行自动化
+
+### 技术架构
+```
+OpenAI Computer Use API
+├── computer-use-preview 模型
+├── Playwright 浏览器控制
+├── 截图分析循环
+└── 安全检查机制
+```
+
+## 📋 前置条件
+
+### 1. 环境变量配置
+```bash
+# OpenAI API Key (必需)
+OPENAI_API_KEY=your_openai_api_key_here
+
+# 个人凭据 (可选，用于自动登录)
+Email=your_email@example.com
+Password=your_password
+```
+
+### 2. 配置文件
+确保以下配置文件存在：
+- `config/personal_data.json` - 个人信息和文档路径
+- `config/browser_config.json` - 浏览器设置（可选）

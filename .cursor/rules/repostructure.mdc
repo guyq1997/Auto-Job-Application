@@ -1,0 +1,158 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Auto-Job-Application 仓库结构文档
+
+## 项目概述
+
+Auto-Job-Application 是一个基于AI的自动化职位申请系统，使用 OpenAI GPT 模型和浏览器自动化技术来智能化处理求职申请流程。
+
+## 目录结构
+
+```
+Auto-Job-Application/
+├── config/                     # 配置文件目录
+│   ├── adzuna_config.json      # Adzuna API 配置
+│   ├── browser_config.json     # 浏览器自动化配置
+│   └── personal_data.json      # 个人信息配置
+│
+├── documents/                   # 求职文档目录
+│   ├── Anschreiben.pdf         # 求职信
+│   ├── Bachelor.pdf            # 学士学位证书
+│   ├── German_C1.pdf           # 德语C1证书
+│   ├── Lebenslauf_Gu.pdf       # 简历
+│   ├── Master_Transcript.pdf   # 硕士成绩单
+│   └── Master.pdf              # 硕士学位证书
+│
+├── scripts/                     # 核心脚本目录
+│   ├── __init__.py             # 包初始化文件
+│   ├── browser_automation.py   # 浏览器自动化核心模块 (使用 browser use库)
+│   ├── openai_computer_automation.py # 浏览器自动化核心模块 (使用openai api)
+│   ├── prompts.py              # AI 提示词模板
+│   └── unified_automation-py        # 组装/集成两个不同浏览器自动化核心模块
+│
+├── tests/                       # 测试文件目录
+│   ├── test_search_results.py  # 搜索结果测试
+│   └── test_two_step_application.py # 两步申请流程测试
+│
+│
+├── screenshots/                 # 截图目录 (调试用)
+│   ├── debug_*.png             # 调试截图
+│   ├── error_*.png             # 错误截图
+│   └── iteration_*.png         # 迭代过程截图
+│
+├── venv/                        # Python 虚拟环境
+│
+├── requirements.txt             # Python 依赖包列表
+└── .gitignore                  # Git 忽略文件配置
+```
+
+## 核心模块说明
+
+### 1. 配置管理 (`config/`)
+
+**功能**: 存储系统配置和个人信息
+
+- `browser_config.json`: 浏览器行为配置 (无头模式、超时设置等)
+- `personal_data.json`: 个人求职信息 (姓名、联系方式、工作经历等)
+- `adzuna_config.json`: Adzuna API 配置和搜索参数
+
+### 2. 核心脚本 (`scripts/`)
+
+**功能**: 系统核心功能实现
+
+- `browser_automation.py`: **主模块** - AI驱动的浏览器自动化引擎
+- `prompts.py`: AI提示词模板管理
+- `adzuna_job_search.py`: Adzuna平台职位搜索和数据处理
+- `job_tools.py`: 求职相关工具函数集合
+
+### 3. 测试框架 (`tests/`)
+
+**功能**: 系统功能测试和验证
+
+- `test_two_step_application.py`: 两阶段申请流程测试
+- `test_search_results.py`: 搜索结果处理测试
+
+## 系统工作流程
+
+### 1. 职位搜索阶段
+```
+Adzuna API → 职位列表获取 → 数据处理 → 筛选匹配职位
+```
+
+### 2. 申请自动化阶段
+```
+目标职位 → 导航到申请页面 → 表单自动填写 → 文档上传 → 提交申请
+```
+
+### 3. 两步申请流程
+```
+步骤1: 导航任务 (找到申请表单)
+   ↓
+步骤2: 表单填写任务 (填写信息并提交)
+```
+
+## 技术栈
+
+### 核心技术
+- **Python 3.13**: 主要编程语言
+- **OpenAI GPT (o3)**: AI推理和决策引擎
+- **Browser-use**: AI驱动的浏览器自动化库
+- **Playwright**: 底层浏览器控制引擎
+
+### 支持库
+- **Pydantic**: 数据验证和序列化
+- **AsyncIO**: 异步编程支持
+- **JSON**: 配置文件处理
+- **Datetime**: 日期时间处理
+
+## 配置要求
+
+### 环境变量
+```bash
+OPENAI_API_KEY=your_openai_api_key
+ADZUNA_APP_ID=your_adzuna_app_id
+ADZUNA_APP_KEY=your_adzuna_app_key
+Email=your_email
+Password=your_password
+```
+
+### Python 依赖
+```bash
+pip install -r requirements.txt
+```
+
+## 使用场景
+
+### 1. 批量职位申请
+- 自动搜索匹配职位
+- 批量申请多个职位
+- 统一管理申请状态
+
+### 2. 智能表单填写
+- 自动识别表单字段
+- 智能填写个人信息
+- 自动上传相关文档
+
+### 3. 多平台支持
+- 支持各种求职网站
+- 自适应不同表单格式
+- 处理登录和验证流程
+
+## 扩展性
+
+### 模块化设计
+- 各模块功能独立
+- 易于添加新的求职平台支持
+- 配置驱动的灵活性
+
+### AI 提示词系统
+- 模板化提示词管理
+- 支持多语言环境
+- 可自定义指令策略
+
+---
+
+*此文档提供了项目的整体架构概览。如需详细技术信息，请参考各模块的专门技术文档。*

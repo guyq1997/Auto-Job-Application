@@ -1,0 +1,14 @@
+{
+    "browser_config": {
+        "headless": false,
+        "window_size": {
+            "width": 1920,
+            "height": 1080
+        },
+        "timeout": 30000
+    },
+    "application_settings": {
+        "max_applications_per_session": 5,
+        "delay_between_applications": 30
+    }
+}

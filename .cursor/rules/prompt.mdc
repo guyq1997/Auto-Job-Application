@@ -1,0 +1,66 @@
+---
+globs: prompts.py
+alwaysApply: false
+---
+# Prompts 模块技术文档
+
+## 概述
+
+`prompts.py` 模块为AI驱动的职位申请自动化系统提供提示词模板。它包含指导AI代理完成复杂职位申请流程的提示词模板，确保在不同求职平台上的一致性和有效性。在自动化脚本（browser_automation.py 和 openai_computer_automation.py 中可以直接调用本脚本中的提示词，发给LLM）
+
+## 核心组件
+
+### JobApplicationPrompts 类
+
+**设计模式**: 静态方法，无状态提示词生成
+
+**主要功能**:
+- 模板化提示词构建
+- 动态内容注入
+- 多语言支持 (英语/德语/中文)
+- 上下文感知指令生成
+
+## 提示词模板
+
+### 1. 导航提示词 (`get_navigation_prompt`)
+
+**功能**: 指导AI代理找到并导航到职位申请表单
+
+**核心步骤**:
+1. **查找申请按钮**: 识别 "Apply", "申请", "Bewerben" 等按钮
+2. **点击按钮**: 立即执行点击操作
+3. **处理重定向**: 管理页面跳转和外部网站
+4. **处理登录**: 使用提供的用户名/密码
+5. **确认表单页面**: 验证到达申请表单
+6. **返回表单URL**: 输出格式化的表单链接
+
+**安全特性**:
+- 验证码检测和处理
+- 区分申请表单和联系表单
+- 优先手动申请方式
+- 全面的错误报告机制
+
+### 2. 表单填写提示词 (`get_form_filling_prompt`)
+
+**功能**: 提供自动化表单填写、文件上传和提交的详细指令
+
+**数据处理流程**:
+
+```python
+# 个人信息提取
+personal_info = personal_data.get("personal_info", {})
+work_experience = personal_data.get("work_experience", [])
+education = personal_data.get("education", [])
+
+# 工作经历处理 (取最新职位)
+current_job = work_experience[0]
+
+# 教育背景处理 (取最高学历)
+latest_education = education[0]
+```
+
+**表单字段映射**:
+- **个人信息**: 姓名、生日、联系方式、地址
+- **职业信息**: LinkedIn、GitHub、国籍
+- **就业条件**: 离职期、开始日期、期望薪资
+- **动态日期**: 开始日期 = 当前时间 + 3周

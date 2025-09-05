@@ -4,3 +4,8 @@ browser-use>=0.1.0
 playwright>=1.40.0
 openai>=1.0.0
 python-dotenv>=1.0.0
+pillow>=10.0.0
+
+# OpenAI Computer Use API 依赖
+playwright>=1.40.0
+openai>=1.50.0

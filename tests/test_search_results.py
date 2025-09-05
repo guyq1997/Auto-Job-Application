@@ -3,7 +3,13 @@
 测试脚本：展示Adzuna搜索结果的详细结构
 """
 
+import sys
+import os
 import json
+
+# 添加项目根目录到Python路径
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from scripts.adzuna_job_search import AdzunaJobSearch
 
 def test_search_results():

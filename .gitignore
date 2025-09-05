@@ -181,4 +181,4 @@ job_data/
 resumes/
 cover_letters/
 
-*.json
+personal_data.json
