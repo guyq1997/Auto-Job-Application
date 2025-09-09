@@ -70,7 +70,7 @@ class OpenAIComputerUseExample:
         test_job = {
             "title": "Python Developer",
             "company": "Example Company",
-            "url": "https://apply.jcd.de/ApplyForm.php?iApplyFormID=600&iJobAdID=100218&iCodeNumber=&tc=3-10&",
+            "url": "https://k2-systems-gmbh.jobs.personio.de/job/2294139?display=de&language=de&pid=21c4e0cb-ba25-43e3-8013-89e03d43b4fd&it=3nJa9uzyrFConQcXK4udmw#apply",
             "location": "Berlin, Germany",
             "description": "Looking for an experienced Python developer..."
         }

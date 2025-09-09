@@ -27,6 +27,12 @@ Please follow these steps:
 
 2. **Confirm Arrival at Application Form**:
    - Confirm the page contains an application form (with input fields like name, email, etc.)
+   
+# Tools Usage Guidelines:
+### CAPTCHA Recognition Tools:
+**When to use**: Encountered CAPTCHA, verification codes, or security challenges
+- **recognize_captcha**: For general CAPTCHA types
+- **solve_hcaptcha_slider**: Specifically for hCaptcha slider puzzles
 
 
 # Important Reminders:
@@ -35,7 +41,7 @@ Please follow these steps:
 """
     
     @staticmethod
-    def get_form_filling_prompt(personal_data: Dict) -> str:
+    def get_form_filling_prompt(personal_data: Dict, job_url: str) -> str:
         """Create form filling instruction prompt"""
         personal_info = personal_data.get("personal_info", {})
         work_experience = personal_data.get("work_experience", [])
@@ -114,18 +120,25 @@ Please follow these steps:
         education_text = format_education_background(education)
         
         return f"""
+Go To: {job_url}
+
 THEN I need you to help me fill out the form, upload files and submit.
 
 # Task Description: Form Filling
 Your task is to fill out the job application form, upload files and submit. I have navigated to the application form page, now I need you to help me fill in all necessary information.
 
-## Required Information
-Below I will provide you with all the information needed to fill out the form, please fill out the form according to this information.
+## Available Tools and When to Use Them:
+
+### CAPTCHA Recognition Tools:
+**When to use**: Encountered CAPTCHA, verification codes, or security challenges
+- **recognize_captcha**: For general CAPTCHA types
+- **solve_hcaptcha_slider**: Specifically for hCaptcha slider puzzles
 
 **My Personal Information**
 
 - Anrede: {personal_info.get('Anrede', '')}
 - Titel: {personal_info.get('Titel', '')}
+- Anredetitel: {personal_info.get('Anredetitel', '')}
 - Gender: {personal_info.get('Gender', '')}
 - Last Name: {personal_info.get('last_name', '')}
 - First Name: {personal_info.get('first_name', '')}
@@ -155,7 +168,7 @@ Below I will provide you with all the information needed to fill out the form, p
 
 **Work Experience:**
 {experience_text}
-   
+
 
 **Document File Paths:**
 - Resume: {personal_data.get('documents', [])[0].get('file_path', '') if len(personal_data.get('documents', [])) > 0 else ''}
@@ -175,24 +188,20 @@ If there are restrictions on the number or size of document uploads, please do n
 For other open-ended questions (such as "Why do you want to join our company"), provide brief answers according to the information provided.
 
 ## How to Fill Out the Form
-
 Next, please fill out the form according to the form prompts, upload materials and submit the application form.
 
 - Carefully read the requirements and labels for each field
-- Prioritize filling in fields marked as required (*)
+- You must fill in fields marked as required (*)
 - For uncertain fields, you can skip them or choose the most appropriate option
-- If you encounter captcha or other verification steps, please stop and report
-- Ensure information accuracy
-- If the form has multiple steps/pages, complete them step by step
-- If there are confirmation boxes or terms agreements, please check them (such as: data protection statements, etc.)
-- Do not subscribe to any emails
+- If you encounter captcha or other verification steps, please use the CAPTCHA tool
+- Do not subscribe to any email
 - Finally click the submit button
 - If an error occurs, you should see the error message, go back and correct it.
 
 # Important Notice
-- You should submit the application at the end
-- If error in the form occurs, you should go back and correct it.
+- You should submit the application by yourself, you should not stop and report.
 - Always choose apply manually, do not apply with LinkedIn or other job platforms.
+- Do not apply with LinkedIn or other job platforms!!!
 - While filling the date, use the click_element_by_index tool to click the date picker and select the date. Only use input_text tool if you can not find the date picker!!!
-- only agree to the necessary terms and conditions, which must be agreed. ( often marked with "*")
+- You must agree to the necessary terms and conditions, which must be agreed. (often marked with "*")
 """

@@ -13,12 +13,13 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import base64
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 try:
     from browser_use import Agent, Browser, ChatOpenAI, Tools
     from dotenv import load_dotenv
     from .prompts import JobApplicationPrompts
+    from .captcha_tools import create_captcha_tools
 except ImportError as e:
     print(f"❌ 缺少依赖库: {e}")
     print("请运行: pip install -r requirements.txt")
@@ -26,6 +27,7 @@ except ImportError as e:
 
 # 加载环境变量
 load_dotenv()
+
 
 @dataclass
 class ApplicationResult:
@@ -53,6 +55,7 @@ class JobApplicationBot:
         self.job_data = job_data or {}
         self.job_url = self.job_data.get("url", "")
         self.results: List[ApplicationResult] = []
+        self.tools = self._create_tools()  # 创建工具集合
 
     def _load_sensitive_data(self) -> Dict:
         """加载敏感数据"""
@@ -124,6 +127,13 @@ class JobApplicationBot:
             raise Exception("Browser agent not initialized. Please call initialize() first.")
         return self.agent
     
+    def _create_tools(self):
+        """创建自定义工具集合"""
+        # 返回CAPTCHA工具，截图工具通过单独方法提供
+        captcha_tools = create_captcha_tools(bot_instance=self)
+        return captcha_tools.get_tools()
+    
+    
 
     async def initialize(self, job_data: Dict = None):
         """初始化浏览器和AI代理"""
@@ -140,23 +150,44 @@ class JobApplicationBot:
             return False
         
         try:
-            # 创建保持会话的浏览器配置
-            self.browser = Browser(headless=False,keep_alive=True,  wait_for_network_idle_page_load_time=1.0, minimum_wait_page_load_time=0.5) 
+            # 从配置获取headless设置，默认为True（无头模式）
+            browser_config = self.config.get("browser_config", {})
+            headless_mode = browser_config.get("headless", True)
             
-            # 创建初始任务提示
-            initial_prompt = self._create_navigation_prompt(self.job_url)
+            # 检查是否强制调试模式
+            debug_mode = os.getenv("BROWSER_DEBUG_MODE", "false").lower() == "true"
+            if debug_mode:
+                headless_mode = False
+                print("🐛 检测到调试模式，使用可见浏览器")
+            
+            if headless_mode:
+                print("👻 使用无头模式运行，不会干扰你的工作")
+            else:
+                print("🖥️ 使用可见模式运行（调试用）")
+            
+            # 创建保持会话的浏览器配置
+            self.browser = Browser(
+                headless=headless_mode,
+                keep_alive=True
+            ) 
+            
+
 
             # 获取文档文件路径列表
             document_paths = self._get_document_paths()
-            
+            initial_prompt = self._create_form_filling_prompt(self.personal_data, self.job_url)
+
             # 创建单个代理，使用保持会话的浏览器配置和工具
             self.agent = Agent(
                 task=initial_prompt,
                 llm=self._create_llm_client(),
                 browser=self.browser,
+                tools=self.tools,  # 添加自定义工具
                 vision_detail_level="auto",
                 sensitive_data=self._load_sensitive_data(),
-                step_timeout=180,
+                step_timeout=300,
+                llm_timeout=180,
+                output_schema=ApplicationResult,
                 available_file_paths=document_paths  # 添加文件访问权限
             )
             
@@ -164,6 +195,13 @@ class JobApplicationBot:
             print("✅ 浏览器和AI代理初始化完成")
             print("📝 使用单个AI代理和保持会话的浏览器配置：")
             print("   🔗 代理将在同一浏览器会话中执行所有任务")
+            print("   🤖 已启用智能CAPTCHA识别工具，支持:")
+            print("      • 文字验证码 (text)")
+            print("      • 数学计算 (math)")  
+            print("      • 图像选择 (recaptcha)")
+            print("      • 滑块验证码 (slider)")
+            print("   🎯 已启用hCaptcha专用工具 (solve_hcaptcha_slider)")
+            print("   📸 截图工具可通过 bot.get_screenshot_tools() 获取")
             return True
             
         except Exception as e:
@@ -177,7 +215,7 @@ class JobApplicationBot:
         )
     
     async def apply_to_job(self) -> ApplicationResult:
-        document_paths = self._get_document_paths()
+
         """申请单个职位 - 两步骤流程"""
         job_url = self.job_url
         job_title = self.job_data.get("title", "未知职位")
@@ -192,19 +230,8 @@ class JobApplicationBot:
             # 第一步：导航到申请表单
             print("📍 第一步：执行导航任务...")
             print(self.browser.id)
-            result = await self.agent.run(max_steps=20)
+            result = await self.agent.run(max_steps=60)
             
-            # 等待一段时间让页面稳定
-            await asyncio.sleep(5)
-            print(self.browser.id)
-            # 第二步：添加表单填写任务
-            print("📝 第二步：添加表单填写任务...")
-            # TODO: 这里可以通过agent获取当前页面内容来进行更精确的日期字段分析
-            # 目前使用空字符串，将使用通用日期处理策略
-            form_prompt = self._create_form_filling_prompt(self.personal_data)
-            self.agent.add_new_task(form_prompt)
-
-            await self.agent.run(max_steps=100)
 
             
             print(f"✅ 成功申请: {job_title}")
@@ -214,7 +241,8 @@ class JobApplicationBot:
                 job_url=job_url,
                 job_title=job_title,
                 company=company,
-                status="success",
+                status=result.status,
+                error_message=result.error_message,
             )
                 
         except Exception as e:
@@ -224,10 +252,8 @@ class JobApplicationBot:
             
             return ApplicationResult(
                 job_url=job_url,
-                job_title=job_title,
-                company=company,
-                status="failed",
-                error_message=error_msg,
+                status=result.status,
+                error_message=result.error_message,
 
             )
     
@@ -236,10 +262,10 @@ class JobApplicationBot:
         """创建导航指令提示"""
         return JobApplicationPrompts.get_navigation_prompt(job_url)
     
-    def _create_form_filling_prompt(self, personal_data: Dict) -> str:
+    def _create_form_filling_prompt(self, personal_data: Dict, job_url: str) -> str:
         """创建表单填写指令提示，包含智能日期处理"""
         # 获取基础表单填写提示
-        form_prompt = JobApplicationPrompts.get_form_filling_prompt(personal_data)
+        form_prompt = JobApplicationPrompts.get_form_filling_prompt(personal_data, job_url)
         
         return form_prompt
     

@@ -1,0 +1,54 @@
+---
+globs: docker_runner.py
+alwaysApply: false
+---
+
+# Docker容器运行脚本 (docker_runner.py)
+
+## 🎯 主要功能
+
+### 1. 容器内任务执行器
+这个脚本在每个Docker容器内运行，负责处理分配给该容器的职位申请任务。
+
+### 2. 工作流程
+```
+容器启动 → 读取职位数据 → 循环处理申请 → 保存结果 → 容器结束
+```
+
+## 🔧 核心组件解析
+
+### DockerJobRunner类 (第28-149行)
+这是主要的工作类，包含：
+
+**初始化 (第31-38行)**
+- 设置容器ID标识
+- 创建结果保存目录
+
+**单个职位处理 (第40-88行)**
+- 创建自动化机器人实例
+- 执行职位申请
+- 清理资源
+- 返回结果字典
+
+**批量处理 (第90-112行)**
+- 循环处理多个职位
+- 保存中间结果
+- 添加请求间隔（避免被网站封锁）
+
+**结果保存 (第114-149行)**
+- `save_intermediate_result()`: 保存单个申请结果
+- `save_batch_results()`: 保存整个批次的汇总结果
+
+## 📋 使用场景
+
+这个脚本不是直接运行的，而是被Docker容器调用：
+```bash
+# 在容器内执行
+python -m scripts.docker_runner --jobs /tmp/jobs.json --backend browser-use --container-id batch-001
+```
+
+## 🔄 与其他组件的关系
+
+- **被调用者**: `docker_batch_manager.py` 启动容器时调用此脚本
+- **依赖**: `unified_automation.py` 提供实际的申请功能
+- **输出**: 结果文件保存到 `/app/results/` 目录，供主机收集

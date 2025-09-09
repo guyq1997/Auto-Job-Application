@@ -138,12 +138,27 @@ class OpenAIComputerUseBot:
             
             # 启动浏览器
             browser_config = self.config.get("browser_config", {})
+            headless_mode = browser_config.get("headless", True)
+            
+            # 检查是否强制调试模式
+            debug_mode = os.getenv("BROWSER_DEBUG_MODE", "false").lower() == "true"
+            if debug_mode:
+                headless_mode = False
+                print("🐛 检测到调试模式，使用可见浏览器")
+            
+            if headless_mode:
+                print("👻 使用无头模式运行，不会干扰你的工作")
+            else:
+                print("🖥️ 使用可见模式运行（调试用）")
+            
             self.browser = await self.playwright.chromium.launch(
-                headless=browser_config.get("headless", False),
+                headless=headless_mode,
                 slow_mo=browser_config.get("slow_mo", 1000),
                 args=[
                     "--disable-extensions",
-                    "--disable-file-system"
+                    "--disable-file-system",
+                    "--no-sandbox",  # 无头模式下提高兼容性
+                    "--disable-dev-shm-usage"  # 减少内存使用
                 ],
                 env={}  # 清空环境变量以提高安全性
             )

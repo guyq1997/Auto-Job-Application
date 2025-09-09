@@ -1,0 +1,8 @@
+---
+globs: captcha_tools.py
+alwaysApply: false
+---
+
+## 概述
+
+我们为Browser-Use的AI agent创建了一个专门的分析captcha的工具模块。

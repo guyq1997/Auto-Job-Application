@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # 基础服务模板
+  job-bot-base: &job-bot-base
+    build: .
+    image: job-application-bot
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - Email=${Email}
+      - Password=${Password}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./docker_results:/app/results
+      - ./config:/app/config:ro
+      - ./documents:/app/documents:ro
+    networks:
+      - job-bot-network
+    restart: "no"
+  
+  # 并行容器实例
+  job-bot-1:
+    <<: *job-bot-base
+    container_name: job-bot-1
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - Email=${Email}
+      - Password=${Password}
+      - CONTAINER_ID=bot-1
+      - PYTHONUNBUFFERED=1
+  
+  job-bot-2:
+    <<: *job-bot-base
+    container_name: job-bot-2
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - Email=${Email}
+      - Password=${Password}
+      - CONTAINER_ID=bot-2
+      - PYTHONUNBUFFERED=1
+  
+  job-bot-3:
+    <<: *job-bot-base
+    container_name: job-bot-3
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - Email=${Email}
+      - Password=${Password}
+      - CONTAINER_ID=bot-3
+      - PYTHONUNBUFFERED=1
+  
+  job-bot-4:
+    <<: *job-bot-base
+    container_name: job-bot-4
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - Email=${Email}
+      - Password=${Password}
+      - CONTAINER_ID=bot-4
+      - PYTHONUNBUFFERED=1
+  
+  job-bot-5:
+    <<: *job-bot-base
+    container_name: job-bot-5
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - Email=${Email}
+      - Password=${Password}
+      - CONTAINER_ID=bot-5
+      - PYTHONUNBUFFERED=1
+
+networks:
+  job-bot-network:
+    driver: bridge
+
+volumes:
+  results:
+    driver: local

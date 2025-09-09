@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 项目概述
 
-Auto-Job-Application 是一个基于AI的自动化职位申请系统，使用 OpenAI GPT 模型和浏览器自动化技术来智能化处理求职申请流程。
+Auto-Job-Application 是一个基于AI的自动化职位申请系统，使用 OpenAI GPT 模型和浏览器自动化技术来智能化处理求职申请流程。现已支持 **Docker容器化批量并行处理**，可同时运行多个容器进行高效的批量职位申请。
 
 ## 目录结构
 
@@ -15,7 +15,7 @@ Auto-Job-Application 是一个基于AI的自动化职位申请系统，使用 Op
 Auto-Job-Application/
 ├── config/                     # 配置文件目录
 │   ├── adzuna_config.json      # Adzuna API 配置
-│   ├── browser_config.json     # 浏览器自动化配置
+│   ├── browser_config.json     # 浏览器自动化配置 (支持无头模式)
 │   └── personal_data.json      # 个人信息配置
 │
 ├── documents/                   # 求职文档目录
@@ -28,15 +28,20 @@ Auto-Job-Application/
 │
 ├── scripts/                     # 核心脚本目录
 │   ├── __init__.py             # 包初始化文件
-│   ├── browser_automation.py   # 浏览器自动化核心模块 (使用 browser use库)
-│   ├── openai_computer_automation.py # 浏览器自动化核心模块 (使用openai api)
+│   ├── browser_automation.py   # 浏览器自动化核心模块 (Browser-use库)
+│   ├── openai_computer_automation.py # 浏览器自动化核心模块 (OpenAI Computer Use API)
 │   ├── prompts.py              # AI 提示词模板
-│   └── unified_automation-py        # 组装/集成两个不同浏览器自动化核心模块
+│   ├── unified_automation.py   # 统一自动化接口 (支持多后端)
+│   └── docker_runner.py        # Docker容器运行脚本 ✨
 │
 ├── tests/                       # 测试文件目录
 │   ├── test_search_results.py  # 搜索结果测试
 │   └── test_two_step_application.py # 两步申请流程测试
 │
+├── docker_results/              # Docker运行结果目录 ✨
+│   ├── batch_*.json            # 各容器批次结果
+│   ├── result_*.json           # 单个申请结果
+│   └── summary_*.json          # 批量执行摘要
 │
 ├── screenshots/                 # 截图目录 (调试用)
 │   ├── debug_*.png             # 调试截图
@@ -45,6 +50,12 @@ Auto-Job-Application/
 │
 ├── venv/                        # Python 虚拟环境
 │
+├── Dockerfile                   # Docker镜像构建文件 ✨
+├── docker-compose.yml           # Docker Compose配置 ✨
+├── docker_batch_manager.py      # Docker批量管理器 ✨
+├── run_docker_batch.sh          # 快速启动脚本 ✨
+├── example_jobs.json            # 示例职位数据 ✨
+├── use_example.py               # 使用示例脚本
 ├── requirements.txt             # Python 依赖包列表
 └── .gitignore                  # Git 忽略文件配置
 ```
@@ -63,12 +74,31 @@ Auto-Job-Application/
 
 **功能**: 系统核心功能实现
 
-- `browser_automation.py`: **主模块** - AI驱动的浏览器自动化引擎
+- `browser_automation.py`: **Browser-use后端** - AI驱动的浏览器自动化引擎
+- `openai_computer_automation.py`: **OpenAI Computer Use后端** - 基于OpenAI Computer Use API的自动化引擎
+- `unified_automation.py`: **统一接口** - 整合多种自动化后端的统一API
+- `docker_runner.py`: **Docker容器运行器** - 在容器中执行职位申请的脚本
 - `prompts.py`: AI提示词模板管理
-- `adzuna_job_search.py`: Adzuna平台职位搜索和数据处理
-- `job_tools.py`: 求职相关工具函数集合
 
-### 3. 测试框架 (`tests/`)
+### 3. Docker化支持 ✨
+
+**功能**: 容器化批量并行处理
+
+- `Dockerfile`: Docker镜像构建配置，包含所有运行时依赖
+- `docker-compose.yml`: 多容器编排配置，支持5个并行容器
+- `docker_batch_manager.py`: **批量管理器** - 协调多容器并行执行
+- `run_docker_batch.sh`: **一键启动脚本** - 简化Docker批量运行流程
+- `example_jobs.json`: 示例职位数据文件
+
+### 4. 结果管理 (`docker_results/`)
+
+**功能**: 批量处理结果存储和分析
+
+- `batch_*.json`: 各个容器的批次执行结果
+- `result_*.json`: 单个职位申请的详细结果
+- `summary_*.json`: 整体批量执行的汇总报告
+
+### 5. 测试框架 (`tests/`)
 
 **功能**: 系统功能测试和验证
 
@@ -77,21 +107,40 @@ Auto-Job-Application/
 
 ## 系统工作流程
 
-### 1. 职位搜索阶段
+### 1. 传统单线程流程
 ```
-Adzuna API → 职位列表获取 → 数据处理 → 筛选匹配职位
-```
-
-### 2. 申请自动化阶段
-```
-目标职位 → 导航到申请页面 → 表单自动填写 → 文档上传 → 提交申请
+职位列表 → 逐个申请 → 等待完成 → 下一个职位
 ```
 
-### 3. 两步申请流程
+### 2. Docker并行流程 ✨
+```
+职位列表 → 分批处理 → 多容器并行 → 结果汇总
+     ↓
+Container 1: 职位 1-2
+Container 2: 职位 3-4  
+Container 3: 职位 5-6
+Container 4: 职位 7-8
+Container 5: 职位 9-10
+     ↓
+并行执行 → 实时结果收集 → 生成汇总报告
+```
+
+### 3. 单个申请流程（每个容器内）
 ```
 步骤1: 导航任务 (找到申请表单)
    ↓
 步骤2: 表单填写任务 (填写信息并提交)
+   ↓
+步骤3: 结果保存 (保存申请状态和错误信息)
+```
+
+### 4. 批量处理流程
+```
+1. 读取职位数据 → 2. 分割成批次 → 3. 启动Docker容器
+                                    ↓
+4. 收集结果 ← 5. 并行执行申请 ← 6. 容器独立运行
+   ↓
+7. 生成汇总报告 → 8. 清理资源
 ```
 
 ## 技术栈
@@ -100,13 +149,21 @@ Adzuna API → 职位列表获取 → 数据处理 → 筛选匹配职位
 - **Python 3.13**: 主要编程语言
 - **OpenAI GPT (o3)**: AI推理和决策引擎
 - **Browser-use**: AI驱动的浏览器自动化库
+- **OpenAI Computer Use API**: 原生计算机操作API ✨
 - **Playwright**: 底层浏览器控制引擎
+- **Docker**: 容器化部署和并行处理 ✨
 
 ### 支持库
 - **Pydantic**: 数据验证和序列化
 - **AsyncIO**: 异步编程支持
 - **JSON**: 配置文件处理
 - **Datetime**: 日期时间处理
+- **concurrent.futures**: 并行处理支持 ✨
+
+### 容器化技术 ✨
+- **Docker Engine**: 容器运行时环境
+- **Docker Compose**: 多容器编排
+- **Linux容器**: 隔离的运行环境
 
 ## 配置要求
 
@@ -126,33 +183,80 @@ pip install -r requirements.txt
 
 ## 使用场景
 
-### 1. 批量职位申请
-- 自动搜索匹配职位
-- 批量申请多个职位
-- 统一管理申请状态
+### 1. 高效批量职位申请 ✨
+- **Docker并行处理**: 同时运行5个容器，效率提升5倍
+- **自动任务分配**: 智能分割职位列表到不同容器
+- **实时结果收集**: 即时获取每个申请的状态反馈
+- **统一结果管理**: 自动汇总所有容器的执行结果
 
 ### 2. 智能表单填写
-- 自动识别表单字段
-- 智能填写个人信息
-- 自动上传相关文档
+- **多后端支持**: Browser-use 和 OpenAI Computer Use API 双引擎
+- **无头模式运行**: 后台执行，不干扰正常工作
+- **自动识别表单字段**: AI智能理解不同网站的表单结构
+- **智能填写个人信息**: 根据配置自动填写相关信息
+- **自动上传相关文档**: 支持简历、证书等文档自动上传
 
 ### 3. 多平台支持
-- 支持各种求职网站
-- 自适应不同表单格式
-- 处理登录和验证流程
+- **广泛兼容性**: 支持各种求职网站和申请系统
+- **自适应表单格式**: AI自动适应不同的表单布局
+- **登录状态管理**: 自动处理登录和验证流程
+- **错误自动处理**: 智能处理常见的网站错误和异常
+
+### 4. 企业级部署 ✨
+- **容器化部署**: 标准化的Docker镜像，易于部署和扩展
+- **资源隔离**: 每个容器独立运行，互不干扰
+- **横向扩展**: 可根据需要调整并行容器数量
+- **监控和日志**: 完整的执行日志和结果追踪
 
 ## 扩展性
 
 ### 模块化设计
-- 各模块功能独立
-- 易于添加新的求职平台支持
-- 配置驱动的灵活性
+- **各模块功能独立**: 核心组件松耦合设计
+- **易于添加新的求职平台支持**: 统一接口设计
+- **配置驱动的灵活性**: JSON配置文件管理所有参数
+- **多后端架构**: 支持不同的自动化引擎切换
 
 ### AI 提示词系统
-- 模板化提示词管理
-- 支持多语言环境
-- 可自定义指令策略
+- **模板化提示词管理**: 结构化的提示词系统
+- **支持多语言环境**: 国际化支持
+- **可自定义指令策略**: 灵活的AI指令配置
+
+### Docker化扩展 ✨
+- **水平扩展**: 可根据需求调整容器数量
+- **云原生部署**: 支持Kubernetes等容器编排平台
+- **微服务架构**: 每个容器作为独立的微服务
+- **负载均衡**: 支持多实例负载分配
+
+## 快速开始 ✨
+
+### Docker方式（推荐）
+```bash
+# 1. 设置环境变量
+export OPENAI_API_KEY=your_api_key
+
+# 2. 一键启动批量处理
+./run_docker_batch.sh example_jobs.json 5 browser-use
+
+# 3. 查看结果
+ls docker_results/
+```
+
+### 传统方式
+```bash
+# 1. 安装依赖
+pip install -r requirements.txt
+
+# 2. 运行单个申请
+python use_example.py
+
+# 3. 批量处理
+python -c "
+import asyncio
+from scripts.unified_automation import create_unified_bot
+# ... 你的代码
+"
+```
 
 ---
 
-*此文档提供了项目的整体架构概览。如需详细技术信息，请参考各模块的专门技术文档。*
+*此文档提供了项目的整体架构概览，包括最新的Docker化并行处理功能。如需详细技术信息，请参考各模块的专门技术文档。*

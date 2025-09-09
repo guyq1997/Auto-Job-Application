@@ -1,0 +1,42 @@
+{
+  "container_id": "batch-001",
+  "timestamp": "20250909_165655",
+  "total_jobs": 3,
+  "successful": 0,
+  "failed": 3,
+  "results": [
+    {
+      "container_id": "batch-001",
+      "job_url": "https://recruiting.ferchau.com/de/de/softwareentwickler-visualisierung-scada-126236?utm_campaign=jobs&utm_source=linkedin.com&utm_medium=cross-network&utm_term=36-50495-GI&utm_content=bewerben_link",
+      "job_title": "",
+      "company": "",
+      "status": "failed",
+      "backend_used": "browser-use",
+      "error_message": "申请过程中出现错误: 'AgentHistoryList' object has no attribute 'status'",
+      "timestamp": "2025-09-09T16:50:47.664486",
+      "processing_time": null
+    },
+    {
+      "container_id": "batch-001",
+      "job_url": "https://www.sirum.de/jobs/apply/odoo-entwickler-m-w-d-202",
+      "job_title": "",
+      "company": "",
+      "status": "failed",
+      "backend_used": "browser-use",
+      "error_message": "申请过程中出现错误: 'AgentHistoryList' object has no attribute 'status'",
+      "timestamp": "2025-09-09T16:52:56.011689",
+      "processing_time": null
+    },
+    {
+      "container_id": "batch-001",
+      "job_url": "https://karriere.pvatepla.com/professionals/offer/business-sales-engineer-m-w-d/4f81091a-947f-42d7-93e0-8a8c6f31c73e?showApplicationForm=true&utm_campaign=gohiring&pid=cfc3112d-2def-47ea-89c7-6b380037b92f&it=Ox_39KH-c7HN85XPOw7wBA",
+      "job_title": "",
+      "company": "",
+      "status": "failed",
+      "backend_used": "browser-use",
+      "error_message": "申请过程中出现错误: 'AgentHistoryList' object has no attribute 'status'",
+      "timestamp": "2025-09-09T16:56:55.494417",
+      "processing_time": null
+    }
+  ]
+}
